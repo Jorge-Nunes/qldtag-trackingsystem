@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Device {
+  id               String     @id @default(uuid())
+  deviceId         String     @unique
+  name             String
+  description      String?
+  linked           Boolean    @default(false)
+  traccarDeviceId  String?
+  lastPositionId   String?
+  status           String     @default("offline")
+  localName        String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  positions        Position[]
+
+  @@index([deviceId])
+  @@index([status])
+  @@index([status, createdAt])
+  @@index([linked])
+}
+
+model Position {
+  id          String   @id @default(uuid())
+  deviceId    String
+  latitude    Float
+  longitude   Float
+  accuracy    Float?
+  timestamp   DateTime
+  createdAt   DateTime @default(now())
+  device      Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  sentToTraccar Boolean @default(false)
+
+  @@unique([deviceId, latitude, longitude, timestamp])
+  @@index([deviceId])
+  @@index([timestamp])
+  @@index([sentToTraccar])
+  @@index([deviceId, timestamp])
+  @@index([sentToTraccar, timestamp])
+}
+
+model TraccarConfig {
+  id        String   @id @default(uuid())
+  url       String
+  port      Int      @default(5055)
+  protocol  String   @default("http")
+  enabled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApiConfig {
+  id          String   @id @default(uuid())
+  name        String
+  baseUrl     String
+  apiKey      String?
+  enabled     Boolean  @default(false)
+  syncInterval Int     @default(60)
+  localName   String?
+  syncTime    Int      @default(1)
+  syncSize    Int      @default(100)
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AppConfig {
+  id        String   @id @default(uuid())
+  appName   String   @default("SyncTAG")
+  appLogo   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

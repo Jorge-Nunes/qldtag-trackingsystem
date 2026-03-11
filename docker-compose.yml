@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: qld-tag-postgres
+    environment:
+      - POSTGRES_USER=qldtag
+      - POSTGRES_PASSWORD=qldtag
+      - POSTGRES_DB=qldtag
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qld-tag-backend
+    ports:
+      - "6001:6001"
+    environment:
+      - DATABASE_URL=postgresql://qldtag:qldtag@postgres:5432/qldtag?schema=public
+      - JWT_SECRET=qld-tag-super-secret-key-2026
+      - JWT_EXPIRES_IN=24h
+      - PORT=6001
+      - NODE_ENV=development
+      - APP_URL=http://localhost:6001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: qld-tag-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
