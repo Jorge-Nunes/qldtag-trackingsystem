@@ -7,9 +7,10 @@ Sistema completo para gerenciamento de dispositivos de rastreamento GPS com inte
 ### Backend
 - Node.js + Express.js
 - Prisma ORM
-- SQLite (desenvolvimento) / PostgreSQL (produção)
+- **PostgreSQL** (produção)
 - JWT Authentication
 - node-cron (scheduler)
+- SSL/TLS
 
 ### Frontend
 - React + Vite
@@ -31,9 +32,23 @@ Sistema completo para gerenciamento de dispositivos de rastreamento GPS com inte
 ## Pré-requisitos
 
 - Node.js 18+
+- PostgreSQL 14+
 - npm ou yarn
 
 ## Instalação
+
+### Banco de Dados
+
+```bash
+# Usando Docker (recomendado)
+docker run -d \
+  --name qld-tag-postgres \
+  -e POSTGRES_USER=qldtag \
+  -e POSTGRES_PASSWORD=qldtag \
+  -e POSTGRES_DB=qldtag \
+  -p 5432:5432 \
+  postgres:16-alpine
+```
 
 ### Backend
 
@@ -58,16 +73,14 @@ npm run dev
 ### Backend (.env)
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://qldtag:qldtag@localhost:5432/qldtag?schema=public"
 JWT_SECRET="sua-chave-secreta"
 JWT_EXPIRES_IN="24h"
-PORT=3001
-```
+PORT=6001
+NODE_ENV=development
 
-### Configuração para PostgreSQL
-
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/qldtag"
+CA_CERT_PATH="./certs/cert.pem"
+CLIENT_KEY_PATH="./certs/key.pem"
 ```
 
 ## Docker
@@ -78,7 +91,7 @@ docker-compose up -d
 
 Acesse:
 - Frontend: http://localhost:5173
-- Backend: http://localhost:3001
+- Backend: https://localhost:6001
 
 ## API Endpoints
 
@@ -114,12 +127,14 @@ GET /api/config/api - Ver config API externa
 PUT /api/config/api - Salvar config API externa
 GET /api/config/traccar - Ver config Traccar
 PUT /api/config/traccar - Salvar config Traccar
+GET /api/config/app - Ver config do app
+PUT /api/config/app - Salvar config do app
 POST /api/config/sync/trigger - Sincronizar agora
 ```
 
 ## Fluxo de Dados
 
-1. Worker consulta API externa a cada minuto
+1. Worker consulta API externa conforme intervalo configurado
 2. Posições são salvas no banco (sem duplicatas)
 3. Status do dispositivo é atualizado (online/offline)
 4. Novas posições são enviadas para Traccar
@@ -133,8 +148,8 @@ POST /api/config/sync/trigger - Sincronizar agora
 
 Configure no painel de configurações:
 - URL do servidor Traccar
-- Porta (padrão: 8082)
-- Usuário e senha
+- Porta (padrão: 5055)
+- Protocolo (http/https)
 - Ativar/desativar envio
 
 ## Telas
@@ -144,7 +159,7 @@ Configure no painel de configurações:
 - **Dispositivos**: Gerenciamento CRUD
 - **Mapa**: Visualização em tempo real
 - **Histórico**: Linha do tempo com filtros
-- **Configurações**: API externa e Traccar
+- **Configurações**: API externa, Traccar e App
 
 ## Estrutura do Projeto
 
@@ -172,6 +187,26 @@ frontend/
 ├── index.html
 └── package.json
 ```
+
+## Modelos do Banco
+
+### User
+- id, email, password, name, role, createdAt, updatedAt
+
+### Device
+- id, deviceId, name, description, linked, traccarDeviceId, lastPositionId, status, localName, createdAt, updatedAt
+
+### Position
+- id, deviceId, latitude, longitude, accuracy, timestamp, createdAt, sentToTraccar
+
+### TraccarConfig
+- id, url, port, protocol, enabled, createdAt, updatedAt
+
+### ApiConfig
+- id, name, baseUrl, apiKey, enabled, syncInterval, localName, syncTime, syncSize, lastSyncAt, createdAt, updatedAt
+
+### AppConfig
+- id, appName, appLogo, createdAt, updatedAt
 
 ## Licença
 
