@@ -11,14 +11,17 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qldtag"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: qld-tag-backend
-    ports:
-      - "6001:6001"
     env_file:
       - .env
     environment:
@@ -28,21 +31,17 @@ services:
       - ./backend:/app
       - /app/node_modules
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: qld-tag-frontend
+  nginx:
+    image: nginx:alpine
+    container_name: qld-tag-nginx
     ports:
-      - "6173:6173"
-    env_file:
-      - .env
+      - "80:80"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
     restart: unless-stopped

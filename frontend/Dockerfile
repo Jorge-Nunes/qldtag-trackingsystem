@@ -1,13 +1,29 @@
-FROM node:20-bookworm-slim
+# Stage 1: Build do frontend
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy source code
 COPY . .
 
-EXPOSE 6173
+# Build production
+RUN npm run build
 
-CMD ["npm", "run", "dev", "--", "--host"]
+# Stage 2: Nginx
+FROM nginx:alpine
+
+# Copy built files
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,21 +1,29 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const apiUrl = process.env.VITE_API_URL || 'http://localhost:6001'
+const isProduction = process.env.NODE_ENV === 'production'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/',
   server: {
     port: 6173,
-    proxy: {
+    host: '0.0.0.0',
+    proxy: isProduction ? undefined : {
       '/api': {
-        target: apiUrl,
+        target: 'http://localhost:6001',
         changeOrigin: true
       },
       '/uploads': {
-        target: apiUrl,
+        target: 'http://localhost:6001',
         changeOrigin: true
       }
     }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'esbuild'
   }
 })
