@@ -5,10 +5,16 @@ const AppConfigContext = createContext();
 
 const normalizeLogoUrl = (url) => {
   if (!url) return null;
-  // Se a URL contém localhost, converte para caminho relativo
-  if (url.includes('localhost') || url.includes('127.0.0.1')) {
-    const pathname = new URL(url).pathname;
-    return pathname;
+  // Se a URL contém localhost ou IP com porta, extrai apenas o pathname
+  if (url.includes('localhost') || url.includes('127.0.0.1') || url.match(/:\d+\//)) {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.pathname;
+    } catch {
+      // Se não conseguir fazer parse, tenta extrair manualmente
+      const match = url.match(/(\/uploads\/.*)$/);
+      return match ? match[1] : null;
+    }
   }
   return url;
 };
