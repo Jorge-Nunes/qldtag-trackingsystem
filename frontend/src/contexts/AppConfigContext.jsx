@@ -3,6 +3,16 @@ import api from '../services/api';
 
 const AppConfigContext = createContext();
 
+const normalizeLogoUrl = (url) => {
+  if (!url) return null;
+  // Se a URL contém localhost, converte para caminho relativo
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    const pathname = new URL(url).pathname;
+    return pathname;
+  }
+  return url;
+};
+
 export const AppConfigProvider = ({ children }) => {
   const [appConfig, setAppConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -10,18 +20,22 @@ export const AppConfigProvider = ({ children }) => {
   const loadConfig = async () => {
     try {
       const response = await api.get('/app-config');
-      setAppConfig(response.data);
+      const normalizedLogo = normalizeLogoUrl(response.data.appLogo);
+      setAppConfig({
+        ...response.data,
+        appLogo: normalizedLogo
+      });
       if (response.data?.appName) {
          document.title = response.data.appName;
       }
-      if (response.data?.appLogo) {
+      if (normalizedLogo) {
         let link = document.querySelector("link[rel~='icon']");
         if (!link) {
           link = document.createElement('link');
           link.rel = 'icon';
           document.head.appendChild(link);
         }
-        link.href = response.data.appLogo;
+        link.href = normalizedLogo;
       }
     } catch (error) {
       console.error('Failed to load app config:', error);
@@ -35,22 +49,23 @@ export const AppConfigProvider = ({ children }) => {
   }, []);
 
   const updateConfig = (appName, appLogo) => {
+    const normalizedLogo = normalizeLogoUrl(appLogo);
     setAppConfig(prev => ({
       ...prev,
       appName,
-      appLogo
+      appLogo: normalizedLogo
     }));
     if (appName) {
       document.title = appName;
     }
-    if (appLogo) {
+    if (normalizedLogo) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
         link.rel = 'icon';
         document.head.appendChild(link);
       }
-      link.href = appLogo;
+      link.href = normalizedLogo;
     }
   };
 
