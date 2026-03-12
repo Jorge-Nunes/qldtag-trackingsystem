@@ -31,8 +31,8 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(email, password, name);
-      navigate('/dashboard');
+      const result = await register(email, password, name);
+      navigate('/login', { state: { message: result.message } });
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao criar conta');
     } finally {
@@ -50,11 +50,11 @@ const Register = () => {
       <div className="relative w-full max-w-md">
         <div className="glass-card p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden flex-shrink-0">
+            <div className="w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden flex-shrink-0">
               {appConfig?.appLogo ? (
-                <img src={appConfig.appLogo} alt="Logo" className="w-full h-full object-cover" />
+                <img src={appConfig.appLogo} alt="Logo" className="w-full h-full object-contain p-2" />
               ) : (
-                <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>

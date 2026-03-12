@@ -9,6 +9,7 @@ import deviceRoutes from './routes/devices.js';
 import positionRoutes from './routes/positions.js';
 import configRoutes from './routes/config.js';
 import appConfigRoutes from './routes/appConfig.js';
+import userRoutes from './routes/users.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -38,6 +39,7 @@ app.use('/api/devices', deviceRoutes);
 app.use('/api/positions', positionRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/app-config', appConfigRoutes);
+app.use('/api/users', userRoutes);
 
 app.use(errorHandler);
 

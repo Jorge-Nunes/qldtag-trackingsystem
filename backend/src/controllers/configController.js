@@ -1,7 +1,35 @@
 import traccarService from '../services/traccarService.js';
 import syncService from '../services/syncService.js';
+import config from '../config/index.js';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const configController = {
+  async getSystemInfo(req, res, next) {
+    try {
+      const dbUrl = process.env.DATABASE_URL || '';
+      const isPostgres = dbUrl.includes('postgresql') || dbUrl.includes('postgres');
+      
+      const userCount = await prisma.user.count();
+      const deviceCount = await prisma.device.count();
+      const positionCount = await prisma.position.count();
+
+      res.json({
+        environment: config.nodeEnv || 'development',
+        database: isPostgres ? 'PostgreSQL (Produção)' : 'SQLite (Desenvolvimento)',
+        version: '1.0.0',
+        stats: {
+          usuarios: userCount,
+          dispositivos: deviceCount,
+          posicoes: positionCount
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getTraccarConfig(req, res, next) {
     try {
       const config = await traccarService.getConfig();

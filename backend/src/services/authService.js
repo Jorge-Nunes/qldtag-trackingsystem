@@ -15,23 +15,19 @@ export const authService = {
     const user = await userRepository.create({
       email,
       password: hashedPassword,
-      name
+      name,
+      approved: false
     });
-
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
-    );
 
     return {
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        approved: user.approved
       },
-      token
+      message: 'Conta criada com sucesso. Aguarde aprovação do administrador.'
     };
   },
 
@@ -39,6 +35,10 @@ export const authService = {
     const user = await userRepository.findByEmail(email);
     if (!user) {
       throw { name: 'UnauthorizedError', message: 'Credenciais inválidas' };
+    }
+
+    if (!user.approved) {
+      throw { name: 'UnauthorizedError', message: 'Conta pendente de aprovação. Aguarde o administrador liberar seu acesso.' };
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -74,6 +74,7 @@ export const authService = {
       email: user.email,
       name: user.name,
       role: user.role,
+      approved: user.approved,
       createdAt: user.createdAt
     };
   }

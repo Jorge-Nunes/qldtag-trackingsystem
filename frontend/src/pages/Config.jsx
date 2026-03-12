@@ -25,6 +25,7 @@ const Config = () => {
     appName: '',
     appLogo: null
   });
+  const [systemInfo, setSystemInfo] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,10 +40,11 @@ const Config = () => {
 
   const loadConfigs = async () => {
     try {
-      const [apiRes, traccarRes, appConfigRes] = await Promise.all([
+      const [apiRes, traccarRes, appConfigRes, systemRes] = await Promise.all([
         api.get('/config/api'),
         api.get('/config/traccar'),
-        api.get('/app-config')
+        api.get('/app-config'),
+        api.get('/config/system')
       ]);
       
       if (apiRes.data) {
@@ -70,6 +72,9 @@ const Config = () => {
           appName: appConfigRes.data.appName || 'SyncTAG',
           appLogo: appConfigRes.data.appLogo || null
         });
+      }
+      if (systemRes.data) {
+        setSystemInfo(systemRes.data);
       }
     } catch (err) {
       console.error('Erro ao carregar configurações:', err);
@@ -497,17 +502,33 @@ const Config = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-500">Ambiente</p>
-            <p className="font-medium text-gray-800">Desenvolvimento</p>
+            <p className="font-medium text-gray-800">{systemInfo?.environment || 'Carregando...'}</p>
           </div>
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-500">Banco de Dados</p>
-            <p className="font-medium text-gray-800">SQLite (desenvolvimento)</p>
+            <p className="font-medium text-gray-800">{systemInfo?.database || 'Carregando...'}</p>
           </div>
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-500">Versão</p>
-            <p className="font-medium text-gray-800">1.0.0</p>
+            <p className="font-medium text-gray-800">{systemInfo?.version || '1.0.0'}</p>
           </div>
         </div>
+        {systemInfo?.stats && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-primary-50 rounded-lg">
+              <p className="text-sm text-primary-600">Usuários</p>
+              <p className="text-2xl font-bold text-primary-800">{systemInfo.stats.usuarios}</p>
+            </div>
+            <div className="p-4 bg-primary-50 rounded-lg">
+              <p className="text-sm text-primary-600">Dispositivos</p>
+              <p className="text-2xl font-bold text-primary-800">{systemInfo.stats.dispositivos}</p>
+            </div>
+            <div className="p-4 bg-primary-50 rounded-lg">
+              <p className="text-sm text-primary-600">Posições</p>
+              <p className="text-2xl font-bold text-primary-800">{systemInfo.stats.posicoes}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

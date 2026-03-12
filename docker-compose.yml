@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: qld-tag-frontend
     ports:
-      - "5173:5173"
+      - "6173:6173"
     environment:
       - VITE_API_URL=http://backend:6001
     volumes:

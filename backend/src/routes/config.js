@@ -6,6 +6,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
+router.get('/system', configController.getSystemInfo);
 router.get('/traccar', configController.getTraccarConfig);
 router.put('/traccar', configController.saveTraccarConfig);
 router.post('/traccar/test', configController.testTraccarConnection);

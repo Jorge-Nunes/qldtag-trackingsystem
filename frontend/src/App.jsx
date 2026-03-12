@@ -10,6 +10,7 @@ import Devices from './pages/Devices';
 import Mapa from './pages/Mapa';
 import Historico from './pages/Historico';
 import Config from './pages/Config';
+import Users from './pages/Users';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -85,6 +86,7 @@ function App() {
             <Route path="/map" element={<Mapa />} />
             <Route path="/history" element={<Historico />} />
             <Route path="/config" element={<Config />} />
+            <Route path="/users" element={<Users />} />
           </Route>
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

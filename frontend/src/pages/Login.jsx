@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAppConfig } from '../contexts/AppConfigContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,14 @@ const Login = () => {
   const { login } = useAuth();
   const { appConfig } = useAppConfig();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
