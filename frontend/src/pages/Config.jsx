@@ -27,6 +27,7 @@ const Config = () => {
   });
   const [systemInfo, setSystemInfo] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -107,7 +108,10 @@ const Config = () => {
     try {
       const formData = new FormData();
       formData.append('appName', appConfig.appName);
-      if (logoFile) {
+      
+      if (removeLogo) {
+        formData.append('removeLogo', 'true');
+      } else if (logoFile) {
         formData.append('appLogo', logoFile);
       }
       
@@ -128,6 +132,7 @@ const Config = () => {
           appLogo: res.data.config.appLogo
         });
         setLogoFile(null);
+        setRemoveLogo(false);
         updateConfig(res.data.config.appName, res.data.config.appLogo);
       }
     } catch (err) {
@@ -244,19 +249,20 @@ const Config = () => {
                 <div className="h-20 w-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
                   {logoFile ? (
                     <img src={URL.createObjectURL(logoFile)} alt="Preview" className="h-full w-full object-contain p-2" />
-                  ) : appConfig.appLogo ? (
+                  ) : appConfig.appLogo && !removeLogo ? (
                     <img src={appConfig.appLogo} alt="Current Logo" className="h-full w-full object-contain p-2" />
                   ) : (
                     <span className="text-gray-400 text-xs text-center">Sem Logo</span>
                   )}
                 </div>
-                <div>
+                <div className="flex flex-col gap-2">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
                         setLogoFile(e.target.files[0]);
+                        setRemoveLogo(false);
                       }
                     }}
                     className="block w-full text-sm text-gray-500
@@ -266,7 +272,31 @@ const Config = () => {
                       file:bg-primary-50 file:text-primary-700
                       hover:file:bg-primary-100"
                   />
-                  <p className="mt-1 text-xs text-gray-500">Recomendado: Imagem PNG transparente (máx 2MB).</p>
+                  {appConfig.appLogo && !removeLogo && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRemoveLogo(true);
+                        setLogoFile(null);
+                      }}
+                      className="text-red-600 text-sm hover:text-red-700 flex items-center gap-1 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Remover logo
+                    </button>
+                  )}
+                  {removeLogo && (
+                    <button
+                      type="button"
+                      onClick={() => setRemoveLogo(false)}
+                      className="text-gray-600 text-sm hover:text-gray-700 cursor-pointer"
+                    >
+                      Cancelar remoção
+                    </button>
+                  )}
+                  <p className="text-xs text-gray-500">Recomendado: Imagem PNG transparente (máx 2MB).</p>
                 </div>
               </div>
             </div>

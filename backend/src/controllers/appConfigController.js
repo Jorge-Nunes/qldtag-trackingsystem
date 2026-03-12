@@ -11,6 +11,9 @@ const getBaseUrl = (req) => {
 };
 
 const transformLogoUrl = (config, baseUrl) => {
+  if (!config.appLogo) {
+    return { ...config, appLogo: null };
+  }
   if (config.appLogo && config.appLogo.startsWith('/uploads/')) {
     return {
       ...config,
@@ -34,10 +37,12 @@ export const appConfigController = {
 
   updateConfig: async (req, res, next) => {
     try {
-      const { appName } = req.body;
+      const { appName, removeLogo } = req.body;
       let appLogoUrl = undefined;
 
-      if (req.file) {
+      if (removeLogo === 'true') {
+        appLogoUrl = null;
+      } else if (req.file) {
         appLogoUrl = `/uploads/${req.file.filename}`;
       }
 
