@@ -4,10 +4,8 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: qld-tag-postgres
-    environment:
-      - POSTGRES_USER=qldtag
-      - POSTGRES_PASSWORD=qldtag
-      - POSTGRES_DB=qldtag
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
@@ -21,13 +19,11 @@ services:
     container_name: qld-tag-backend
     ports:
       - "6001:6001"
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql://qldtag:qldtag@postgres:5432/qldtag?schema=public
-      - JWT_SECRET=qld-tag-super-secret-key-2026
-      - JWT_EXPIRES_IN=24h
       - PORT=6001
       - NODE_ENV=production
-      - APP_URL=http://localhost:6001
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -42,8 +38,8 @@ services:
     container_name: qld-tag-frontend
     ports:
       - "6173:6173"
-    environment:
-      - VITE_API_URL=http://backend:6001
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app
       - /app/node_modules
